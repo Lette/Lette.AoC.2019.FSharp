@@ -43,7 +43,7 @@ module Day03
         let rec run x y step segments acc =
             match segments with
             | [] -> acc
-            | Segment (_,     0) :: ps -> run  x       y       step ps                                         acc
+            | Segment (_,     0) :: ps -> run  x       y       step                                   ps                               acc
             | Segment (Up,    n) :: ps -> run  x      (y + 1) (step + 1) (Segment (Up,    (n - 1)) :: ps) ((x,     y + 1, step + 1) :: acc)
             | Segment (Right, n) :: ps -> run (x + 1)  y      (step + 1) (Segment (Right, (n - 1)) :: ps) ((x + 1, y    , step + 1) :: acc)
             | Segment (Down,  n) :: ps -> run  x      (y - 1) (step + 1) (Segment (Down,  (n - 1)) :: ps) ((x,     y - 1, step + 1) :: acc)
