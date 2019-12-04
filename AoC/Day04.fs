@@ -4,18 +4,13 @@ module Day04
     let xs = (165432, 707912)
 
     let toDigits n =
-        let d6 = n % 10
-        let q6 = n / 10
-        let d5 = q6 % 10
-        let q5 = q6 / 10
-        let d4 = q5 % 10
-        let q4 = q5 / 10
-        let d3 = q4 % 10
-        let q3 = q4 / 10
-        let d2 = q3 % 10
-        let d1 = q3 / 10
+        let rec run n acc =
+            if n = 0 then
+                acc
+            else
+                run (n / 10) ((n % 10) :: acc)
 
-        [ d1; d2; d3; d4; d5; d6 ]
+        run n []
 
     let isSameDigit =
         function
