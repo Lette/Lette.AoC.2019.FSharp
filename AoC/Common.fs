@@ -83,3 +83,5 @@ module Common
                         yield! inner n xs (k + 1) limit
             }
         inner n [] 1 (int (sqrt (float n)))
+
+    let cons x y = x :: y   // because :: is *not* an operator!
