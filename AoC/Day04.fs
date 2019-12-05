@@ -21,7 +21,7 @@ module Day04
         function
         | a :: b :: [] when a <= b -> true
         | _                        -> false
-        
+
     let twoAdjacentDigitsAreTheSame =
         List.windowed 2
         >> List.exists isSameDigit
