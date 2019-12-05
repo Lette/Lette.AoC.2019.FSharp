@@ -1,6 +1,6 @@
 module Day02
-    open System
     open Common
+    open Computer
 
     let xs =
         getInput 2
@@ -8,40 +8,25 @@ module Day02
         |> (fun s -> s.Split ',')
         |> Array.map int
 
-    let op ip f (mem : int []) =
-        let op1 = mem.[mem.[ip + 1]]
-        let op2 = mem.[mem.[ip + 2]]
-
-        let result = f op1 op2
-
-        mem.[mem.[ip + 3]] <- result
-        ()
-
-    let add ip = op ip (+)
-
-    let multiply ip = op ip (*)
-
     let initMemory noun verb =
         let mem = Array.copy xs
         mem.[1] <- noun
         mem.[2] <- verb
         mem
 
-    let rec runProgram ip (mem : int []) =
-        match mem.[ip] with
-        | 1  -> add ip mem;      runProgram (ip + 4) mem
-        | 2  -> multiply ip mem; runProgram (ip + 4) mem
-        | 99 -> mem.[0]
-        | _  -> failwith "unknown opcode"
+    let finalValueAtZero noun verb =
+        let memory = initMemory noun verb
+        runProgram memory [] [] |> ignore
+        memory.[0]
 
     let part1 () =
 
-        runProgram 0 (initMemory 12 2)
+        finalValueAtZero 12 2
 
     let part2 () =
 
         let rec run noun verb =
-            match runProgram 0 (initMemory noun verb) with
+            match finalValueAtZero noun verb with
             | 19690720 -> (noun, verb)
             | _ ->
                 match noun, verb with

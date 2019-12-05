@@ -2,10 +2,10 @@
 let main _ =
 
     //Day01.show ()
-    //Day02.show ()
+    Day02.show ()
     //Day03.show ()
-    Day04.show ()
-    //Day05.show ()
+    //Day04.show ()
+    Day05.show ()
     //Day06.show ()
     //Day07.show ()
     //Day08.show ()
