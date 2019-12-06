@@ -15,9 +15,9 @@ module Day02
         mem
 
     let finalValueAtZero noun verb =
-        let memory = initMemory noun verb
-        runProgram memory [] [] |> ignore
-        memory.[0]
+
+        runProgram (initMemory noun verb) [] []
+        |> finalValueAt 0
 
     let part1 () =
 
