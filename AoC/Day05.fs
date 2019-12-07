@@ -10,12 +10,14 @@ module Day05
 
     let part1 () =
 
-        runProgram (mem ()) [1] []
+        createInitialState (mem ()) [1]
+        |> runProgram
         |> finalOutput
 
     let part2 () =
 
-        runProgram (mem ()) [5] []
+        createInitialState (mem ()) [5]
+        |> runProgram
         |> finalOutput
 
     let show () =

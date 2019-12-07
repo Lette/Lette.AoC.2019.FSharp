@@ -85,3 +85,36 @@ module Common
         inner n [] 1 (int (sqrt (float n)))
 
     let cons x y = x :: y   // because :: is *not* an operator!
+
+    let rec subsets size set =
+
+        let rec run size set acc =
+            seq {
+                match size, set with
+                | n, x :: xs ->
+                    if n > 0 then yield! run (n - 1) xs (x :: acc)
+                    if n >= 0 then yield! run n xs acc
+                | 0, []      -> yield acc
+                | _, []      -> ()
+            }
+
+        run size set [] |> Seq.toList
+
+    let distribute y xs =
+
+        let rec run pre post acc =
+            match post with
+            | [] -> (xs @ [y]) :: acc
+            | p :: ps ->
+                run (pre @ [p]) ps ((pre @ (y :: post)) :: acc)
+
+        run [] xs []
+
+    let permutations xs =
+
+        let rec run =
+            function
+            | [] -> Seq.singleton []
+            | x :: xs -> run xs |> Seq.collect (distribute x)
+
+        run xs |> Seq.toList
