@@ -9,14 +9,12 @@ module Day01
 
     let fuelReqRec mass =
 
-        let rec trFuelReqs lastMass acc =
-            let newMass = fuelReq lastMass
-            if newMass > 0 then
-                trFuelReqs newMass (acc + newMass)
-            else
-                acc
+        let rec run mass acc =
+            match fuelReq mass with
+            | IsPositive m -> run m (acc + m)
+            | _            -> acc
 
-        trFuelReqs mass 0
+        run mass 0
 
     let part1 () =
 

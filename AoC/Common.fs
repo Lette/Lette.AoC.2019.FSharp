@@ -13,6 +13,8 @@ module Common
         if m.Success then Some(List.tail [ for g in m.Groups -> g.Value ])
         else None
 
+    let (|IsPositive|_|) n = if n > 0 then Some n else None
+
     let cprintf color format =
         let continuation (result : string) =
             let previousColor = Console.ForegroundColor
