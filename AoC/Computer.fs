@@ -1,95 +1,119 @@
 module Computer
+    open Common
 
     type RunState = Running | Halted | Waiting
-    type State = State of mem : int [] * ip : int * input : int list * output : int list * state : RunState
 
-    let private readOp (mem : int []) ip n =
-        let modes = mem.[ip] / 100
+    type State' = {
+        Memory : int []
+        Ip : int
+        Input : int list
+        Output : int list
+        State : RunState
+    }
+
+    let private read        s address       = s.Memory.[address]
+    let private readRef     s address       = read s (read s address)
+    let private readRel     s offset        = read s (s.Ip + offset)
+    let private readRefRel  s offset        = read s (readRel s offset)
+    let private write       s address value = s.Memory.[address] <- value
+    let private writeRef    s address value = write s (read s address) value
+    let private writeRefRel s offset  value = write s (readRel s offset) value
+
+    let incrementIp n  s = { s with Ip = s.Ip + n }
+    let setIp       n  s = { s with Ip = n }
+    let addOutput   o  s = { s with Output = o :: s.Output }
+    let setInputs   is s = { s with Input = is }
+    let addInput    i  s = { s with Input = i :: s.Input }
+    let setWaiting     s = { s with State = Waiting }
+    let setHalted      s = { s with State = Halted }
+
+    let private readOp s n =
+        let modes = readRel s 0 / 100
         let mode = (modes / (pown 10 (n - 1))) % 10
 
         if mode = 0 then
-            mem.[mem.[ip + n]]
+            readRefRel s n
         else
-            mem.[ip + n]
+            readRel s n
 
-    let private add (State (mem, ip, i, o, s)) =
-        let op1 = readOp mem ip 1
-        let op2 = readOp mem ip 2
+    let private add s =
+        (readOp s 1, readOp s 2)
+        ||> (+)
+        |> writeRefRel s 3
 
-        let result = (+) op1 op2
+        incrementIp 4 s
 
-        mem.[mem.[ip + 3]] <- result
-        State (mem, ip + 4, i, o, s)
+    let private multiply s =
+        (readOp s 1, readOp s 2)
+        ||> (*)
+        |> writeRefRel s 3
 
-    let private multiply (State (mem, ip, i, o, s)) =
-        let op1 = readOp mem ip 1
-        let op2 = readOp mem ip 2
+        incrementIp 4 s
 
-        let result = (*) op1 op2
-
-        mem.[mem.[ip + 3]] <- result
-        State (mem, ip + 4, i, o, s)
-
-    let private read (State (mem, ip, i, o, s)) =
-        match i with
-        | [] -> State (mem, ip, i, o, Waiting)
+    let private readInput s =
+        match s.Input with
+        | [] -> setWaiting s
         | i :: is ->
-            mem.[mem.[ip + 1]] <- i
-            State (mem, ip + 2, is, o, s)
+            writeRefRel s 1 i
+            s |> incrementIp 2 |> setInputs is
 
-    let private write (State (mem, ip, i, o, s)) =
-        State (mem, ip + 2, i, (readOp mem ip 1) :: o, s)
+    let private writeOutput s =
+        s |> incrementIp 2 |> addOutput (readOp s 1)
 
-    let private jumpIfTrue (State (mem, ip, i, o, s)) =
-        match readOp mem ip 1 with
-        | 0 -> State (mem, ip + 3, i, o, s)
-        | _ -> State (mem, readOp mem ip 2, i, o, s)
+    let private jumpIfTrue s =
+        match readOp s 1 with
+        | 0 -> incrementIp 3 s
+        | _ -> setIp (readOp s 2) s
 
-    let private jumpIfFalse (State (mem, ip, i, o, s)) =
-        match readOp mem ip 1 with
-        | 0 -> State (mem, readOp mem ip 2, i, o, s)
-        | _ -> State (mem, ip + 3, i, o, s)
+    let private jumpIfFalse s =
+        match readOp s 1 with
+        | 0 -> setIp (readOp s 2) s
+        | _ -> incrementIp 3 s
 
-    let private lessThan (State (mem, ip, i, o, s)) =
-        let op1 = readOp mem ip 1
-        let op2 = readOp mem ip 2
+    let private lessThan s =
+        let op1 = readOp s 1
+        let op2 = readOp s 2
 
-        mem.[mem.[ip + 3]] <- if op1 < op2 then 1 else 0
-        State (mem, ip + 4, i, o, s)
+        writeRefRel s 3 (if op1 < op2 then 1 else 0)
 
-    let private equals (State (mem, ip, i, o, s)) =
-        let op1 = readOp mem ip 1
-        let op2 = readOp mem ip 2
+        incrementIp 4 s
 
-        mem.[mem.[ip + 3]] <- if op1 = op2 then 1 else 0
-        State (mem, ip + 4, i, o, s)
+    let private equals s =
+        let op1 = readOp s 1
+        let op2 = readOp s 2
 
-    let private halt (State (mem, ip, i, o, _)) =
-        State (mem, ip, i, o, Halted)
+        writeRefRel s 3 (if op1 = op2 then 1 else 0)
+
+        incrementIp 4 s
+
+    let private halt s =
+        setHalted s
 
     let createInitialState mem i =
-        State (mem, 0, i, [], Running)
+        { Memory = mem; Ip = 0; Input = i; Output = []; State = Running }
 
-    let provideInput i (State (mem, ip, is, o, s)) =
-        State (mem, ip, (i :: is), o, if s = Waiting then Running else s)
+    let provideInput i s =
+        s
+        |> addInput i
+        |> fun s -> { s with State = (if s.State = Waiting then Running else s.State) }
 
-    let isWaiting (State (_, _, _, _, s)) = s = Waiting
+    let isWaiting s = s.State = Waiting
 
-    let isHalted (State (_, _, _, _, s)) = s = Halted
+    let isHalted s = s.State = Halted
 
-    let rec runProgram ((State (mem, ip, i, o, rs)) as state) =
+    let rec runProgram state =
 
-        if rs <> Running then
+        if state.State <> Running then
             state
         else
 
             let go f = state |> f |> runProgram
 
-            match mem.[ip] % 100 with
+            match readRel state 0 % 100 with
             | 1  -> go add
             | 2  -> go multiply
-            | 3  -> go read
-            | 4  -> go write
+            | 3  -> go readInput
+            | 4  -> go writeOutput
             | 5  -> go jumpIfTrue
             | 6  -> go jumpIfFalse
             | 7  -> go lessThan
@@ -97,18 +121,18 @@ module Computer
             | 99 -> go halt
             | i  -> failwith (sprintf "unknown opcode: %i" i)
 
-    let finalOutput (State (_, _, _, o, rs)) =
-        match rs, List.tryHead o with
+    let finalOutput state =
+        match state.State, List.tryHead state.Output with
         | Halted, Some x -> x
         | Halted, None   -> failwith "no output!"
         | _              -> failwith "not halted!"
 
-    let lastOutput (State (_, _, _, o, _)) =
-        match List.tryHead o with
+    let lastOutput state =
+        match List.tryHead state.Output with
         | Some x -> x
         | None   -> failwith "no output!"
 
-    let finalValueAt address (State (mem, _, _, _, rs)) =
-        match rs with
-        | Halted -> mem.[address]
+    let finalValueAt address state =
+        match state.State with
+        | Halted -> read state address
         | _      -> failwith "not halted!"
