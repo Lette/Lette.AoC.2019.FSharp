@@ -3,7 +3,7 @@ module Computer
 
     type RunState = Running | Halted | Waiting
 
-    type State' = {
+    type State = {
         Memory : int []
         Ip : int
         Input : int list
