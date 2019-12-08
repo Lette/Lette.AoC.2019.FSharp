@@ -42,14 +42,13 @@ module Day06
 
         let findFullPath child =
 
-            let rec run child acc =
-                match child with
-                | "COM" -> acc
-                | _     ->
-                    let o = findParent child
-                    run o (o :: acc)
+            let rec run children =
+                match children with
+                | "COM" :: _ -> children
+                | child :: _ -> run (findParent child :: children)
+                | []         -> failwith "how is this empty?"
 
-            run child [child]
+            run [child]
 
         (findFullPath "YOU", findFullPath "SAN")
         ||> stripEqualElementsFromStart
