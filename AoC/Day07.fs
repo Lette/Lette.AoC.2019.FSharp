@@ -10,38 +10,20 @@ module Day07
 
     let part1 () =
 
-        let runAmplifier phaseSetting input =
+        let runAmplifier input phaseSetting =
             createInitialState (mem ()) [ phaseSetting; input ]
             |> runProgram
             |> finalOutput
 
-        let runAmplifiers phaseSettings =
-            let rec run phases input =
-                match phases with
-                | []      -> input
-                | p :: ps -> run ps (runAmplifier p input) 
-
-            run phaseSettings 0
-
         permutations [ 0 .. 4 ]
-        |> List.map runAmplifiers
+        |> List.map (List.fold runAmplifier 0)
         |> List.max
 
     let part2 () =
 
-
-        let initAmplifiers phaseSettings =
-
-            let initAmplifier phaseSetting =
-                createInitialState (mem ()) [ phaseSetting ]
-                |> runProgram
-
-            let rec run phases acc =
-                match phases with
-                | []      -> List.rev acc
-                | p :: ps -> run ps ((initAmplifier p) :: acc) 
-
-            run phaseSettings []
+        let initAmplifier phaseSetting =
+            createInitialState (mem ()) [ phaseSetting ]
+            |> runProgram
 
         let runAmplifiers amps =
 
@@ -56,9 +38,9 @@ module Day07
                                 x |> provideInput input |> runProgram
                             else
                                 failwith "not waiting!"
-                        let lastOutput = newState |> lastOutput
+                        let output = newState |> lastOutput
 
-                        runOne xs lastOutput (newState :: acc)
+                        runOne xs output (newState :: acc)
 
                 let (output, newAmps) = runOne amps input []
 
@@ -70,7 +52,7 @@ module Day07
             run amps 0
 
         permutations [ 5 .. 9 ]
-        |> List.map initAmplifiers
+        |> List.map (List.map initAmplifier)
         |> List.map runAmplifiers
         |> List.max
 
