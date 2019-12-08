@@ -2,11 +2,20 @@ module Day08
     open System
     open Common
 
+    type Color = Black | White | Transparent
+
+    let toColor =
+        function
+        | "0" -> Black
+        | "1" -> White
+        | "2" -> Transparent
+        | s   -> failwith (sprintf "what's %s?" s)
+
     let xs =
         getInput 8
         |> List.head
         |> Seq.toList
-        |> List.map (string >> int)
+        |> List.map (string >> toColor)
 
     let part1 () =
 
@@ -14,11 +23,11 @@ module Day08
         |> List.chunkBySize (25 * 6)
         |> List.map (
             List.groupBy id
-            >> List.map (fun (k, v) -> (k, List.length v))
+            >> List.map (fun (k, vs) -> (k, List.length vs))
         )
-        |> List.sortBy (List.find (fst >> ((=) 0)) >> snd)
+        |> List.sortBy (List.find (fst >> ((=) Black)) >> snd)
         |> List.head
-        |> List.filter (fst >> ((<>) 0))
+        |> List.filter (fst >> ((<>) Black))
         |> List.map snd
         |> List.fold (*) 1
 
@@ -26,8 +35,8 @@ module Day08
 
         let addPixels first second =
             match first, second with
-            | 2, n -> n
-            | n, _ -> n
+            | Transparent, n -> n
+            | n          , _ -> n
 
         let addLayers xs ys =
             let folder x y state = addPixels x y :: state
@@ -35,9 +44,9 @@ module Day08
 
         let toOutputChar =
             function
-            | 0 -> ' '
-            | 1 -> '#'
-            | _ -> failwith "all transparent???"
+            | Black       -> ' '
+            | White       -> '#'
+            | Transparent -> failwith "all transparent???"
 
         printfn ""
 
