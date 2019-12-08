@@ -6,16 +6,16 @@ module Day08
 
     let toColor =
         function
-        | "0" -> Black
-        | "1" -> White
-        | "2" -> Transparent
-        | s   -> failwith (sprintf "what's %s?" s)
+        | '0' -> Black
+        | '1' -> White
+        | '2' -> Transparent
+        | c   -> failwith (sprintf "what's %c?" c)
 
     let xs =
         getInput 8
         |> List.head
         |> Seq.toList
-        |> List.map (string >> toColor)
+        |> List.map toColor
 
     let part1 () =
 
