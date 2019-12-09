@@ -28,7 +28,7 @@ module Day02
 
         let rec run noun verb =
             match finalValueAtZero noun verb with
-            | n when n = 19690720I -> (noun, verb)
+            | BigInt 19690720I -> (noun, verb)
             | _ ->
                 match noun, verb with
                 | 100, _ -> failwith "no solution found"

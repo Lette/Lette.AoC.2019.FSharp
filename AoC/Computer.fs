@@ -87,13 +87,13 @@ module Computer
 
     let private jumpIfTrue s =
         match readOp s 1 with
-        | n when n = 0I -> incrementIp 3 s
-        | _             -> setIp (readOp s 2 |> int) s
+        | BigInt 0I -> incrementIp 3 s
+        | _         -> setIp (readOp s 2 |> int) s
 
     let private jumpIfFalse s =
         match readOp s 1 with
-        | n when n = 0I -> setIp (readOp s 2 |> int) s
-        | _             -> incrementIp 3 s
+        | BigInt 0I -> setIp (readOp s 2 |> int) s
+        | _         -> incrementIp 3 s
 
     let private lessThan s =
         let op1 = readOp s 1
