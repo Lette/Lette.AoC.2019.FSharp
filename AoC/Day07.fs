@@ -6,7 +6,7 @@ module Day07
         getInput 7
         |> List.head
         |> (fun s -> s.Split ',')
-        |> Array.map int
+        |> Array.map parseBigint
 
     let part1 () =
 
@@ -15,8 +15,8 @@ module Day07
             |> runProgram
             |> finalOutput
 
-        permutations [ 0 .. 4 ]
-        |> List.map (List.fold runAmplifier 0)
+        permutations [ 0I .. 4I ]
+        |> List.map (List.fold runAmplifier 0I)
         |> List.max
 
     let part2 () =
@@ -49,9 +49,9 @@ module Day07
                 else
                     run newAmps output
 
-            run amps 0
+            run amps 0I
 
-        permutations [ 5 .. 9 ]
+        permutations [ 5I .. 9I ]
         |> List.map (List.map initAmplifier)
         |> List.map runAmplifiers
         |> List.max
@@ -59,5 +59,5 @@ module Day07
     let show () =
         showDay
             7
-            part1 (Some 45730)
-            part2 (Some 5406484)
+            part1 (Some 45730I)
+            part2 (Some 5406484I)

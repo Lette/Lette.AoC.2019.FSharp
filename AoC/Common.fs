@@ -1,7 +1,11 @@
 module Common
     open System
     open System.IO
+    open System.Numerics
     open System.Text.RegularExpressions
+
+    let bigint (n : int) = bigint(n)
+    let parseBigint (s : string) = BigInteger.Parse(s)
 
     let getInput =
         sprintf "%s\input\%i.txt" __SOURCE_DIRECTORY__

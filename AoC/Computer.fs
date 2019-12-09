@@ -4,20 +4,35 @@ module Computer
     type RunState = Running | Halted | Waiting
 
     type State = {
-        Memory : int []
+        Memory : bigint []
         Ip : int
-        Input : int list
-        Output : int list
+        Input : bigint list
+        Output : bigint list
         State : RunState
+        Rbo : int
     }
 
-    let private read        s address       = s.Memory.[address]
-    let private readRef     s address       = read s (read s address)
-    let private readRel     s offset        = read s (s.Ip + offset)
-    let private readRefRel  s offset        = read s (readRel s offset)
-    let private write       s address value = s.Memory.[address] <- value
-    let private writeRef    s address value = write s (read s address) value
-    let private writeRefRel s offset  value = write s (readRel s offset) value
+    let private read           s address       =
+        if address < Array.length s.Memory then
+            s.Memory.[address]
+        else
+            failwith (sprintf "can't read address: %i - mem size: %i" address (Array.length s.Memory))
+
+    let private readRef        s address       = read s (read s address |> int)
+    let private readRelIp      s offset        = read s (s.Ip + offset)
+    let private readRelRbo     s offset        = read s (s.Rbo + offset)
+    let private readRefRelIp   s offset        = read s (readRelIp s offset |> int)
+    let private readRefRelRbo  s offset        = read s (readRelRbo s offset |> int)
+
+    let private write          s address value =
+        if address < Array.length s.Memory then
+            s.Memory.[address] <- value
+        else
+            failwith (sprintf "can't write address: %i - mem size: %i" address (Array.length s.Memory))
+
+    let private writeRef       s address value = write s (read s address |> int) value
+    let private writeRefRelIp  s offset  value = write s (readRelIp s offset |> int) value
+    let private writeRefRelRbo s offset  value = write s (s.Rbo + offset) value
 
     let incrementIp n  s = { s with Ip = s.Ip + n }
     let setIp       n  s = { s with Ip = n }
@@ -26,27 +41,37 @@ module Computer
     let addInput    i  s = { s with Input = i :: s.Input }
     let setWaiting     s = { s with State = Waiting }
     let setHalted      s = { s with State = Halted }
+    let setRbo      n  s = { s with Rbo = n }
+
+    let getParameterMode s n =
+        let modes = readRelIp s 0 |> int |> flip (/) 100
+        (modes / (pown 10 (n - 1))) % 10
 
     let private readOp s n =
-        let modes = readRel s 0 / 100
-        let mode = (modes / (pown 10 (n - 1))) % 10
+        match getParameterMode s n with
+        | 0 -> readRefRelIp s n
+        | 1 -> readRelIp s n
+        | 2 -> readRelRbo s (readRelIp s n |> int)
+        | i -> failwith (sprintf "read: unknown parameter mode: %i" i)
 
-        if mode = 0 then
-            readRefRel s n
-        else
-            readRel s n
+    let private writeResult s n result =
+        match getParameterMode s n with
+        | 0 -> writeRefRelIp s n result
+        | 1 -> failwith "writes in immediate mode?"
+        | 2 -> writeRefRelRbo s (readRelIp s n |> int) result
+        | i -> failwith (sprintf "write: unknown parameter mode: %i" i)
 
     let private add s =
         (readOp s 1, readOp s 2)
         ||> (+)
-        |> writeRefRel s 3
+        |> writeResult s 3
 
         incrementIp 4 s
 
     let private multiply s =
         (readOp s 1, readOp s 2)
         ||> (*)
-        |> writeRefRel s 3
+        |> writeResult s 3
 
         incrementIp 4 s
 
@@ -54,7 +79,7 @@ module Computer
         match s.Input with
         | [] -> setWaiting s
         | i :: is ->
-            writeRefRel s 1 i
+            writeResult s 1 i
             s |> incrementIp 2 |> setInputs is
 
     let private writeOutput s =
@@ -62,19 +87,19 @@ module Computer
 
     let private jumpIfTrue s =
         match readOp s 1 with
-        | 0 -> incrementIp 3 s
-        | _ -> setIp (readOp s 2) s
+        | n when n = 0I -> incrementIp 3 s
+        | _             -> setIp (readOp s 2 |> int) s
 
     let private jumpIfFalse s =
         match readOp s 1 with
-        | 0 -> setIp (readOp s 2) s
-        | _ -> incrementIp 3 s
+        | n when n = 0I -> setIp (readOp s 2 |> int) s
+        | _             -> incrementIp 3 s
 
     let private lessThan s =
         let op1 = readOp s 1
         let op2 = readOp s 2
 
-        writeRefRel s 3 (if op1 < op2 then 1 else 0)
+        writeResult s 3 (if op1 < op2 then 1I else 0I)
 
         incrementIp 4 s
 
@@ -82,15 +107,27 @@ module Computer
         let op1 = readOp s 1
         let op2 = readOp s 2
 
-        writeRefRel s 3 (if op1 = op2 then 1 else 0)
+        writeResult s 3 (if op1 = op2 then 1I else 0I)
 
         incrementIp 4 s
+
+    let private adjustRbo s =
+        s
+        |> setRbo (s.Rbo + (readOp s 1 |> int))
+        |> incrementIp 2
 
     let private halt s =
         setHalted s
 
     let createInitialState mem i =
-        { Memory = mem; Ip = 0; Input = i; Output = []; State = Running }
+        { Memory = mem; Ip = 0; Input = i; Output = []; State = Running; Rbo = 0 }
+
+    let expandMemory size s =
+        let expand arr =
+            let arr' = Array.create size 0I
+            Array.blit arr 0 arr' 0 (Array.length arr)
+            arr'
+        { s with Memory = expand s.Memory }
 
     let provideInput i s =
         s
@@ -109,7 +146,7 @@ module Computer
 
             let go f = state |> f |> runProgram
 
-            match readRel state 0 % 100 with
+            match (readRelIp state 0 |> int) |> flip (%) 100 with
             | 1  -> go add
             | 2  -> go multiply
             | 3  -> go readInput
@@ -118,6 +155,7 @@ module Computer
             | 6  -> go jumpIfFalse
             | 7  -> go lessThan
             | 8  -> go equals
+            | 9  -> go adjustRbo
             | 99 -> go halt
             | i  -> failwith (sprintf "unknown opcode: %i" i)
 

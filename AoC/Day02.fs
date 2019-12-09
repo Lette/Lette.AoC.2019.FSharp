@@ -6,12 +6,12 @@ module Day02
         getInput 2
         |> List.head
         |> (fun s -> s.Split ',')
-        |> Array.map int
+        |> Array.map parseBigint
 
     let initMemory noun verb =
         let mem = Array.copy xs
-        mem.[1] <- noun
-        mem.[2] <- verb
+        mem.[1] <- bigint noun
+        mem.[2] <- bigint verb
         mem
 
     let finalValueAtZero noun verb =
@@ -28,7 +28,7 @@ module Day02
 
         let rec run noun verb =
             match finalValueAtZero noun verb with
-            | 19690720 -> (noun, verb)
+            | n when n = 19690720I -> (noun, verb)
             | _ ->
                 match noun, verb with
                 | 100, _ -> failwith "no solution found"
@@ -40,5 +40,5 @@ module Day02
     let show () =
         showDay
             2
-            part1 (Some 4484226)
+            part1 (Some 4484226I)
             part2 (Some 5696)
