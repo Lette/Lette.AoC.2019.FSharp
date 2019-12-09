@@ -27,29 +27,27 @@ module Day03
         |> List.map toSegment
 
     let toWire i s =
-        Wire (i,  (toSegments s))
+        Wire (i, toSegments s)
 
     let xs =
         lazy (
-            //[ "R8,U5,L5,D3"; "U7,R6,D4,L4" ]
-            //[ "R75,D30,R83,U83,L12,D49,R71,U7,L72"; "U62,R66,U55,R34,D71,R55,D58,R83" ]
-            //[ "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51"; "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7" ]
             getInput 3
             |> List.mapi toWire
         )
 
     let runWire (Wire (id, segments)) =
 
-        let rec run x y step segments acc =
+        let rec run segments acc =
+            let (x, y, step) = List.head acc
             match segments with
             | [] -> acc
-            | Segment (_,     0) :: ps -> run  x       y       step                                   ps                               acc
-            | Segment (Up,    n) :: ps -> run  x      (y + 1) (step + 1) (Segment (Up,    (n - 1)) :: ps) ((x,     y + 1, step + 1) :: acc)
-            | Segment (Right, n) :: ps -> run (x + 1)  y      (step + 1) (Segment (Right, (n - 1)) :: ps) ((x + 1, y    , step + 1) :: acc)
-            | Segment (Down,  n) :: ps -> run  x      (y - 1) (step + 1) (Segment (Down,  (n - 1)) :: ps) ((x,     y - 1, step + 1) :: acc)
-            | Segment (Left,  n) :: ps -> run (x - 1)  y      (step + 1) (Segment (Left,  (n - 1)) :: ps) ((x - 1, y    , step + 1) :: acc)
+            | Segment (_,     0) :: ps -> run                              ps                               acc
+            | Segment (Up,    n) :: ps -> run (Segment (Up,    (n - 1)) :: ps) ((x,     y + 1, step + 1) :: acc)
+            | Segment (Right, n) :: ps -> run (Segment (Right, (n - 1)) :: ps) ((x + 1, y    , step + 1) :: acc)
+            | Segment (Down,  n) :: ps -> run (Segment (Down,  (n - 1)) :: ps) ((x,     y - 1, step + 1) :: acc)
+            | Segment (Left,  n) :: ps -> run (Segment (Left,  (n - 1)) :: ps) ((x - 1, y    , step + 1) :: acc)
 
-        let positions = run 0 0 0 segments [(0, 0, 0)]
+        let positions = run segments [(0, 0, 0)]
         (id, positions)
 
     let manhattanDistance (x, y) = abs x + abs y
