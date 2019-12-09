@@ -56,12 +56,12 @@ module Day08
         |> List.map toOutputChar
         |> List.chunkBySize 25
         |> List.map (List.toArray >> String)
-        |> List.iter (printfn "%s") // --> "JCRCB"
+        |> List.iter (printfn "%s")
 
-        0
+        "JCRCB" // <-- by manual OCR!
 
     let show () =
         showDay
             8
             part1 (Some 1474)
-            part2 (Some 0)
+            part2 (Some "JCRCB")
