@@ -29,25 +29,23 @@ module Day07
 
             let rec run amps input =
 
-                let rec runOne amps input acc =
-                    match amps with
-                    | []      -> (input, List.rev acc)
-                    | x :: xs ->
+                if amps |> List.exists isHalted then
+                    input
+
+                else
+                    let runAmp input amp =
                         let newState =
-                            if isWaiting x then
-                                x |> provideInput input |> runProgram
-                            else
-                                failwith "not waiting!"
+                            amp
+                            |> provideInput input
+                            |> runProgram
+
                         let output = newState |> lastOutput
 
-                        runOne xs output (newState :: acc)
+                        (newState, output)
 
-                let (output, newAmps) = runOne amps input []
-
-                if newAmps |> List.exists isHalted then
-                    output
-                else
-                    run newAmps output
+                    amps
+                    |> List.mapFold runAmp input
+                    ||> run
 
             run amps 0I
 
