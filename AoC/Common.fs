@@ -126,3 +126,12 @@ module Common
             | x :: xs -> run xs |> Seq.collect (distribute x)
 
         run xs |> Seq.toList
+
+    let twoPi = Math.PI * 2.0
+    let piOver2 = Math.PI / 2.0
+
+    let rec gcd a b =
+        if b = 0 then
+            a
+        else
+            gcd b (a % b)
