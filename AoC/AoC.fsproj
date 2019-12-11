@@ -22,15 +22,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="input\1.txt" />
+    <Content Include="input\01.txt" />
+    <Content Include="input\02.txt" />
+    <Content Include="input\03.txt" />
+    <Content Include="input\05.txt" />
+    <Content Include="input\06.txt" />
+    <Content Include="input\07.txt" />
+    <Content Include="input\08.txt" />
+    <Content Include="input\09.txt" />
     <Content Include="input\10.txt" />
-    <Content Include="input\2.txt" />
-    <Content Include="input\3.txt" />
-    <Content Include="input\5.txt" />
-    <Content Include="input\6.txt" />
-    <Content Include="input\7.txt" />
-    <Content Include="input\8.txt" />
-    <Content Include="input\9.txt" />
   </ItemGroup>
 
 </Project>

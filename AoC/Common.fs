@@ -10,7 +10,7 @@ module Common
     let (|BigInt|_|) (n : BigInteger) (input : BigInteger) = if n = input then Some () else None
 
     let getInput =
-        sprintf "%s\input\%i.txt" __SOURCE_DIRECTORY__
+        sprintf "%s\input\%02i.txt" __SOURCE_DIRECTORY__
             >> File.ReadAllLines
             >> Array.toList
 
