@@ -135,3 +135,9 @@ module Common
             a
         else
             gcd b (a % b)
+
+    let rec gcdI a b =
+        if b = 0I then
+            a
+        else
+            gcdI b (a % b)
