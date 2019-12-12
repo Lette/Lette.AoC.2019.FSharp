@@ -76,9 +76,9 @@ module Day12
         run moons []
         |> List.map (fun m -> { m with Position = m.Position + m.Velocity })
 
-    let energy m =
-        let ev { X = x; Y = y; Z = z } = abs x + abs y + abs z
-        (ev m.Position) * (ev m.Velocity)
+    let energy moon =
+        let vectorEnergy { X = x; Y = y; Z = z } = abs x + abs y + abs z
+        (vectorEnergy moon.Position) * (vectorEnergy moon.Velocity)
 
     let rec states ({ Step = step; Moons = moons} as state) = seq {
 
@@ -108,37 +108,29 @@ module Day12
         let y0 = s0.Moons |> List.map (fun m -> (m.Position.Y, 0))
         let z0 = s0.Moons |> List.map (fun m -> (m.Position.Z, 0))
 
-        let xCoords ms = ms |> List.map (fun m -> (m.Position.X, m.Velocity.X))
-        let yCoords ms = ms |> List.map (fun m -> (m.Position.Y, m.Velocity.Y))
-        let zCoords ms = ms |> List.map (fun m -> (m.Position.Z, m.Velocity.Z))
+        let xx ms = ms |> List.map (fun m -> (m.Position.X, m.Velocity.X))
+        let yy ms = ms |> List.map (fun m -> (m.Position.Y, m.Velocity.Y))
+        let zz ms = ms |> List.map (fun m -> (m.Position.Z, m.Velocity.Z))
 
-        let xLoop =
+        let scanner (x, y, z) state =
+            (
+                (if x > 0 then x else if xx state.Moons = x0 then state.Step else 0),
+                (if y > 0 then y else if yy state.Moons = y0 then state.Step else 0),
+                (if z > 0 then z else if zz state.Moons = z0 then state.Step else 0)
+            )
+
+        let (x, y, z) =
             s0
             |> states
             |> Seq.skip 1
-            |> Seq.find (fun s -> (xCoords s.Moons) = x0)
-            |> fun s -> s.Step
-            |> bigint
+            |> Seq.scan scanner (0, 0, 0)
+            |> Seq.find (fun (a, b, c) -> a > 0 && b > 0 && c > 0)
 
-        let yLoop =
-            s0
-            |> states
-            |> Seq.skip 1
-            |> Seq.find (fun s -> (yCoords s.Moons) = y0)
-            |> fun s -> s.Step
-            |> bigint
+        let (x', y', z') = (bigint x, bigint y, bigint z)
 
-        let zLoop =
-            s0
-            |> states
-            |> Seq.skip 1
-            |> Seq.find (fun s -> (zCoords s.Moons) = z0)
-            |> fun s -> s.Step
-            |> bigint
+        let gcd' = x' |> gcdI y' |> gcdI z'
 
-        let gcd' = (gcdI (gcdI xLoop yLoop) zLoop)
-
-        xLoop * yLoop * zLoop / (gcd' ** 3)
+        x' * y' * z' / (gcd' ** 3)
 
     let show () =
         showDay
