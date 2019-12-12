@@ -32,6 +32,7 @@
     <Content Include="input\08.txt" />
     <Content Include="input\09.txt" />
     <Content Include="input\10.txt" />
+    <Content Include="input\11.txt" />
   </ItemGroup>
 
 </Project>
