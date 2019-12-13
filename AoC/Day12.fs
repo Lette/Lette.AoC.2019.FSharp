@@ -104,33 +104,33 @@ module Day12
 
         let s0 = createInitialStep (input ())
 
-        let x0 = s0.Moons |> List.map (fun m -> (m.Position.X, 0))
-        let y0 = s0.Moons |> List.map (fun m -> (m.Position.Y, 0))
-        let z0 = s0.Moons |> List.map (fun m -> (m.Position.Z, 0))
+        let getElements selector = List.map (fun m -> (selector m.Position, selector m.Velocity))
 
-        let xx ms = ms |> List.map (fun m -> (m.Position.X, m.Velocity.X))
-        let yy ms = ms |> List.map (fun m -> (m.Position.Y, m.Velocity.Y))
-        let zz ms = ms |> List.map (fun m -> (m.Position.Z, m.Velocity.Z))
+        let getXs = getElements (fun v -> v.X)
+        let getYs = getElements (fun v -> v.Y)
+        let getZs = getElements (fun v -> v.Z)
 
-        let scanner (x, y, z) state =
-            (
-                (if x > 0 then x else if xx state.Moons = x0 then state.Step else 0),
-                (if y > 0 then y else if yy state.Moons = y0 then state.Step else 0),
-                (if z > 0 then z else if zz state.Moons = z0 then state.Step else 0)
-            )
+        let x0 = getXs s0.Moons
+        let y0 = getYs s0.Moons
+        let z0 = getZs s0.Moons
 
-        let (x, y, z) =
-            s0
-            |> states
-            |> Seq.skip 1
-            |> Seq.scan scanner (0, 0, 0)
-            |> Seq.find (fun (a, b, c) -> a > 0 && b > 0 && c > 0)
+        let check getter zero state value =
+            if value > 0 then value else if getter state.Moons = zero then state.Step else 0
 
-        let (x', y', z') = (bigint x, bigint y, bigint z)
+        let scannerChecks = (check getXs x0, check getYs y0, check getZs z0)
 
-        let gcd' = x' |> gcdI y' |> gcdI z'
+        let scanner results state =
+            scannerChecks
+            |> Tuple3.apply state
+            |> Tuple3.applyEach results
 
-        x' * y' * z' / (gcd' ** 3)
+        s0
+        |> states
+        |> Seq.skip 1
+        |> Seq.scan scanner (0, 0, 0)
+        |> Seq.find (fun (a, b, c) -> a > 0 && b > 0 && c > 0)
+        |> Tuple3.map bigint
+        |> Tuple3.reduce lcm
 
     let show () =
         showDay

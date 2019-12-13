@@ -24,7 +24,7 @@ module Day13
     let Ball = 4I
     let Score = -1I
 
-    let parseOutput current output =
+    let parseOutput output =
         
         let rec run output ((p, b, s) as acc) =
             match output with
@@ -36,7 +36,6 @@ module Day13
             | _  -> failwith "not an expected sequence of outputs!"
 
         run output (None, None, None)
-        |> defaultValue current
 
     let part2 () =
 
@@ -49,7 +48,8 @@ module Day13
                 |> provideInput ((ball - paddle) |> sign |> bigint)
                 |> runProgram
                 |> popOutput
-                |> mapFirst (parseOutput (paddle, ball, score))
+                |> Tuple2.mapFst parseOutput
+                |> Tuple2.mapFst (Tuple3.defaultValueEach (paddle, ball, score))
                 ||> run
 
         createInitialState (mem ()) []

@@ -9,6 +9,7 @@
     <Compile Include="Common.fs" />
     <Compile Include="Tuple2.fs" />
     <Compile Include="Tuple3.fs" />
+    <Compile Include="BigInt.fs" />
     <Compile Include="Computer.fs" />
     <Compile Include="Day01.fs" />
     <Compile Include="Day02.fs" />

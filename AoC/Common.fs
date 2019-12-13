@@ -1,13 +1,7 @@
 module Common
     open System
     open System.IO
-    open System.Numerics
     open System.Text.RegularExpressions
-
-    let bigint (n : int) = bigint(n)
-    let parseBigint (s : string) = BigInteger.Parse(s)
-
-    let (|BigInt|_|) (n : BigInteger) (input : BigInteger) = if n = input then Some () else None
 
     let getInput =
         sprintf "%s\input\%02i.txt" __SOURCE_DIRECTORY__
@@ -135,9 +129,3 @@ module Common
             a
         else
             gcd b (a % b)
-
-    let rec gcdI a b =
-        if b = 0I then
-            a
-        else
-            gcdI b (a % b)
