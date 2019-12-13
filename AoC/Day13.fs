@@ -1,0 +1,64 @@
+module Day13
+    open System
+    open Common
+    open Computer
+
+    let mem () =
+        getInput 13
+        |> List.head
+        |> (fun s -> s.Split ',')
+        |> Array.map parseBigint
+
+    let part1 () =
+        createInitialState (mem ()) []
+        |> expandMemory 3000
+        |> runProgram
+        |> fun s -> s.Output
+        |> List.chunkBySize 3
+        |> List.groupBy List.head
+        |> List.find (fun (k, _) -> k =  2I)
+        |> snd
+        |> List.length
+
+    let Paddle = 3I
+    let Ball = 4I
+    let Score = -1I
+
+    let parseOutput current output =
+        
+        let rec run output ((p, b, s) as acc) =
+            match output with
+            | BigInt Paddle :: _ :: x            :: os -> run os (Some x, b, s)
+            | BigInt Ball   :: _ :: x            :: os -> run os (p, Some x, s)
+            | n             :: _ :: BigInt Score :: os -> run os (p, b, Some n)
+            | _             :: _ :: _            :: os -> run os (p, b, s)
+            | [] -> acc
+            | _  -> failwith "not an expected sequence of outputs!"
+
+        run output (None, None, None)
+        |> defaultValue current
+
+    let part2 () =
+
+        let rec run (paddle, ball, score) state =
+
+            if isHalted state then
+                score
+            else
+                state
+                |> provideInput ((ball - paddle) |> sign |> bigint)
+                |> runProgram
+                |> popOutput
+                |> mapFirst (parseOutput (paddle, ball, score))
+                ||> run
+
+        createInitialState (mem ()) []
+        |> setMemory 0 2I
+        |> expandMemory 3000
+        |> run (0I, 0I, 0I)
+
+    let show () =
+        showDay
+            13
+            part1 (Some 242)
+            part2 (Some 11641I)

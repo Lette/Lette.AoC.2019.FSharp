@@ -42,6 +42,9 @@ module Computer
     let setWaiting     s = { s with State = Waiting }
     let setHalted      s = { s with State = Halted }
     let setRbo      n  s = { s with Rbo = n }
+    let setMemory a v  s = write s a v; s
+    let clearOutputs   s = { s with Output = [] }
+    let popOutput      s = (s.Output, clearOutputs s)
 
     let getParameterMode s n =
         let modes = readRelIp s 0 |> int |> flip (/) 100
