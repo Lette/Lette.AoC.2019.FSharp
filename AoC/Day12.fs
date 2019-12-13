@@ -128,7 +128,7 @@ module Day12
         |> states
         |> Seq.skip 1
         |> Seq.scan scanner (0, 0, 0)
-        |> Seq.find (fun (a, b, c) -> a > 0 && b > 0 && c > 0)
+        |> Seq.find (Tuple3.forAll ((<) 0))
         |> Tuple3.map bigint
         |> Tuple3.reduce lcm
 

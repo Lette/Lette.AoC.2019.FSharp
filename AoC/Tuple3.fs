@@ -31,3 +31,6 @@ module Tuple3
             Option.defaultValue db b,
             Option.defaultValue dc c
         )
+
+    let forAll predicate (a, b, c) =
+        predicate a && predicate b && predicate c
