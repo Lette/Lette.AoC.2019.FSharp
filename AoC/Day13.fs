@@ -3,6 +3,11 @@ module Day13
     open Common
     open Computer
 
+    let Block = 2I
+    let Paddle = 3I
+    let Ball = 4I
+    let Score = -1I
+
     let mem () =
         getInput 13
         |> List.head
@@ -15,14 +20,8 @@ module Day13
         |> runProgram
         |> fun s -> s.Output
         |> List.chunkBySize 3
-        |> List.groupBy List.head
-        |> List.find (fun (k, _) -> k =  2I)
-        |> snd
+        |> List.filter (List.head >> ((=) Block))
         |> List.length
-
-    let Paddle = 3I
-    let Ball = 4I
-    let Score = -1I
 
     let parseOutput output =
         
