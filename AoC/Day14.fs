@@ -4,7 +4,7 @@ module Day14
 
     let toChem (s : string) =
         match (s.Trim ()).Split " " with
-        | [| q; c |] -> (int q, c)
+        | [| q; c |] -> (parseBigint q, c)
         | _ -> failwith (sprintf "what chem is %s?" s)
 
     let toChemicals (s : string) =
@@ -35,7 +35,13 @@ module Day14
     let findMaps chem maps =
         maps |> List.partition (fun (_, (_, oc)) -> oc = chem)
 
-    let getQ cq iq oq = (float cq) / (float oq) |> ceil |> int |> (*) iq
+    let getQ' cq iq oq =
+        let q = cq / oq
+        let r = cq % oq
+        if r = 0I then
+            q * iq
+        else
+            (q + 1I) * iq
 
     let findLeaf cmap outputs =
         let l =
@@ -48,30 +54,46 @@ module Day14
         |> List.groupBy (fun (_, c) -> c)
         |> List.map (fun (k, vs) -> (vs |> List.sumBy fst, k))
 
+    let rec run maps outputs =
+        match outputs with
+        | [] -> failwith "that's unexpected!"
+        | [(n, "ORE")] -> n
+        | _ ->
+            let ((cq, cc), outputs') = findLeaf maps outputs
+            let (mapsToLeaf, maps') = findMaps cc maps
+            let newOutputs =
+                mapsToLeaf
+                |> List.map (fun ((iq, ic), (oq, _)) -> (getQ' cq iq oq, ic))
+
+            outputs' @ newOutputs
+            |> normalizeOutputs
+            |> run maps'
+
     let part1 () =
 
-        let rec run maps outputs =
-            match outputs with
-            | [] -> failwith "that's unexpected!"
-            | [(n, "ORE")] -> n
-            | _ ->
-                let ((cq, cc), outputs') = findLeaf maps outputs
-                let (mapsToLeaf, maps') = findMaps cc maps
-                let newOutputs =
-                    mapsToLeaf
-                    |> List.map (fun ((iq, ic), (oq, _)) -> (getQ cq iq oq, ic))
-
-                outputs' @ newOutputs
-                |> normalizeOutputs
-                |> run maps'
-
-        run (xs ()) [(1, "FUEL")]
+        run (xs ()) [(1I, "FUEL")]
 
     let part2 () =
-        0
+
+        let tryRun n = run (xs ()) [(n, "FUEL")]
+
+        let range = (1000000I, 2000000I)
+
+        let rec bisect range =
+            match range with
+            | (a, b) when a + 1I = b -> a
+            | (a, b) ->
+                let c = (a + b) / 2I
+                let o = tryRun c
+                if o < 1000000000000I then
+                    bisect (c, b)
+                else
+                    bisect (a, c)
+
+        bisect range
 
     let show () =
         showDay
             14
-            part1 (Some 873899)
-            part2 None
+            part1 (Some 873899I)
+            part2 (Some 1893569I)
