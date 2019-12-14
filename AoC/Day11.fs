@@ -105,7 +105,7 @@ module Day11
                 |> List.min
 
             rows
-            |> List.map (fun (x, s) -> (x - minX, s))
+            |> List.map (Tuple2.mapFst (flip (-) minX))
             |> List.map padLeft
 
         printfn ""
@@ -117,7 +117,7 @@ module Day11
         |> List.groupBy fst
         |> List.map (snd >> List.head)
         |> List.groupBy (fst >> snd)
-        |> List.map (fun (y, xs) -> (y, createRow xs))
+        |> List.map (Tuple2.mapSnd createRow)
         |> List.sortByDescending fst
         |> List.map snd
         |> padStrings

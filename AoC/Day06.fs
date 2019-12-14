@@ -35,8 +35,8 @@ module Day06
 
         let rec stripEqualElementsFromStart a b =
             match a, b with
-            | [], _                        -> (a, b)
-            | _ , []                       -> (a, b)
+            | [],      _                   -> (a, b)
+            | _ ,      []                  -> (a, b)
             | x :: _ , y :: _  when x <> y -> (a, b)
             | _ :: xs, _ :: ys             -> stripEqualElementsFromStart xs ys
 
@@ -52,7 +52,9 @@ module Day06
 
         (findFullPath "YOU", findFullPath "SAN")
         ||> stripEqualElementsFromStart
-        ||> fun a b -> List.length a + List.length b - 2
+        |> Tuple2.map List.length
+        |> Tuple2.reduce (+)
+        |> flip (-) 2
 
     let show () =
         showDay

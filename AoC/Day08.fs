@@ -11,7 +11,7 @@ module Day08
         | '2' -> Transparent
         | c   -> failwith (sprintf "what's %c?" c)
 
-    let xs =
+    let xs () =
         getInput 8
         |> List.head
         |> Seq.toList
@@ -19,11 +19,11 @@ module Day08
 
     let part1 () =
 
-        xs
+        xs ()
         |> List.chunkBySize (25 * 6)
         |> List.map (
             List.groupBy id
-            >> List.map (fun (k, vs) -> (k, List.length vs))
+            >> List.map (Tuple2.mapSnd List.length)
         )
         |> List.sortBy (List.find (fst >> ((=) Black)) >> snd)
         |> List.head
@@ -50,7 +50,7 @@ module Day08
 
         printfn ""
 
-        xs
+        xs ()
         |> List.chunkBySize (25 * 6)
         |> List.reduce addLayers
         |> List.map toOutputChar

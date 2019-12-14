@@ -2,21 +2,17 @@ module Day02
     open Common
     open Computer
 
-    let xs =
+    let mem () =
         getInput 2
         |> List.head
         |> (fun s -> s.Split ',')
         |> Array.map parseBigint
 
-    let initMemory noun verb =
-        let mem = Array.copy xs
-        mem.[1] <- bigint noun
-        mem.[2] <- bigint verb
-        mem
-
     let finalValueAtZero noun verb =
 
-        createInitialState (initMemory noun verb) []
+        createInitialState (mem ()) []
+        |> setMemory 1 (bigint noun)
+        |> setMemory 2 (bigint verb)
         |> runProgram
         |> finalValueAt 0
 
@@ -31,11 +27,12 @@ module Day02
             | BigInt 19690720I -> (noun, verb)
             | _ ->
                 match noun, verb with
-                | 100, _ -> failwith "no solution found"
-                | n, 100 -> run (n + 1) 0
-                | n, v   -> run n (v + 1)
+                | 100,   _ -> failwith "no solution found"
+                |   n, 100 -> run (n + 1)  0
+                |   n,   v -> run  n      (v + 1)
 
-        run 0 0 |> (fun (n, v) -> n * 100 + v)
+        run 0 0
+        |> (fun (n, v) -> n * 100 + v)
 
     let show () =
         showDay

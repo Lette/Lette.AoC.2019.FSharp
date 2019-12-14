@@ -95,7 +95,8 @@ module Day10
         |> List.map snd                            //             (x, y)               list  list
         |> runGiantLaser                           //             (x, y)               list
         |> List.item 199                           //             (x, y)
-        |> fun (x, y) -> x * 100 + y
+        |> Tuple2.mapFst ((*) 100)
+        |> Tuple2.reduce (+)
 
     let show () =
         showDay
