@@ -35,7 +35,7 @@ module Day14
     let findMaps chem maps =
         maps |> List.partition (fun (_, (_, oc)) -> oc = chem)
 
-    let getQ' cq iq oq =
+    let getRequiredQuantity cq iq oq =
         let q = cq / oq
         let r = cq % oq
         if r = 0I then
@@ -63,7 +63,7 @@ module Day14
             let (mapsToLeaf, maps') = findMaps cc maps
             let newOutputs =
                 mapsToLeaf
-                |> List.map (fun ((iq, ic), (oq, _)) -> (getQ' cq iq oq, ic))
+                |> List.map (fun ((iq, ic), (oq, _)) -> (getRequiredQuantity cq iq oq, ic))
 
             outputs' @ newOutputs
             |> normalizeOutputs
