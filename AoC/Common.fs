@@ -129,3 +129,15 @@ module Common
             a
         else
             gcd b (a % b)
+
+    let rec cycle xs =
+        seq {
+            yield! xs
+            yield! cycle xs
+        }
+
+    let rec iterate n f input =
+        if (n = 0) then
+            input
+        else
+            iterate (n - 1) f (f input)
