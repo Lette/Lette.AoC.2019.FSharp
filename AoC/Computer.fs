@@ -45,6 +45,7 @@ module Computer
     let setMemory a v  s = write s a v; s
     let clearOutputs   s = { s with Output = [] }
     let popOutput      s = (s.Output, clearOutputs s)
+    let clone          s = { s with Memory = Array.copy s.Memory }
 
     let getParameterMode s n =
         let modes = readRelIp s 0 |> int |> flip (/) 100

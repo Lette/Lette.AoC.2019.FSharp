@@ -67,6 +67,10 @@ module Common
 
     let consoleClear () = System.Console.Clear ()
     let consoleHome () = System.Console.SetCursorPosition (0, 0)
+    let printAt x y s =
+        System.Console.SetCursorPosition (x, y)
+        printf "%s" s
+
     let sleep (milliseconds : int) = System.Threading.Thread.Sleep milliseconds
 
     let divisors n =

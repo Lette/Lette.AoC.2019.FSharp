@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -26,6 +26,7 @@
     <Compile Include="Day12.fs" />
     <Compile Include="Day13.fs" />
     <Compile Include="Day14.fs" />
+    <Compile Include="Day15.fs" />
     <Compile Include="Day16.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
@@ -44,6 +45,7 @@
     <Content Include="input\12.txt" />
     <Content Include="input\13.txt" />
     <Content Include="input\14.txt" />
+    <Content Include="input\15.txt" />
     <Content Include="input\16.txt" />
   </ItemGroup>
 

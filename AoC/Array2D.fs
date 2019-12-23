@@ -36,3 +36,12 @@ module Array2D
 
         array'.[(max 0 x), (max 0 y)] <- v
         array'
+
+    let expandGet zero x y array =
+        let xLength = Array2D.length1 array
+        let yLength = Array2D.length2 array
+
+        if x < 0 || y < 0 || x >= xLength || y >= yLength then
+            zero
+        else
+            array.[x, y]
