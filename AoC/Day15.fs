@@ -57,12 +57,12 @@ module Day15
         | BigInt 2I -> Oxygen
         | n  -> failwith (sprintf "unknown output: %A" n)
 
-    let getPosition (x, y) d =
-        match d with
-        | Up -> (x, y - 1)
-        | Down -> (x, y + 1)
-        | Left -> (x - 1, y)
-        | Right -> (x + 1, y)
+    let getPosition (P (x, y)) direction =
+        match direction with
+        | Up -> P (x, y - 1)
+        | Down -> P (x, y + 1)
+        | Left -> P (x - 1, y)
+        | Right -> P (x + 1, y)
 
     let printToConsole { Map = map; Offset = P (minX, minY) } =
 
@@ -76,10 +76,11 @@ module Day15
         System.Console.SetCursorPosition (0, 42)
         sleep 1
 
-    let consoleVisualizer = { Print = printToConsole; Clear = System.Console.Clear }
+    let consoleVisualizer = { Print = printToConsole; Clear = consoleClear }
     let noVisualizer = { Print = (fun _ -> ()); Clear = (fun () -> ()) }
+    let visualizer = noVisualizer
 
-    let set (x, y) block ({ Map = map; Offset = P (minX, minY) } as world) =
+    let set (P (x, y)) block ({ Map = map; Offset = P (minX, minY) } as world) =
 
         let a' = Array2D.expandSet Unknown block (x - minX) (y - minY) map
 
@@ -91,13 +92,12 @@ module Day15
             Offset = P (minX', minY')
         }
 
-    let get (x, y) { Map = map; Offset = P (minX, minY) } =
+    let get (P (x, y)) { Map = map; Offset = P (minX, minY) } =
 
         Array2D.expandGet Unknown (x - minX) (y - minY) map
 
-    let part1 () =
-        let visualizers = (noVisualizer, consoleVisualizer)
-        let visualizer = snd visualizers
+    let createWorld () =
+
         visualizer.Clear ()
 
         let checkDirection (position, computer) world direction =
@@ -124,34 +124,76 @@ module Day15
                     (
                         Some (position', computer'),
                         { (world |> set position' Oxygen) with
-                            Oxygen = Some (P position')
+                            Oxygen = Some position'
                         }
                     )
 
             | _ -> (None, world)
 
-        let createWorld () =
+        let rec run states world =
+            visualizer.Print world
 
-            let rec run states world =
-                visualizer.Print world
+            match states with
+            | [] -> world
+            | state :: ss ->
+                let (newStates, world') =
+                    directions
+                    |> List.mapFold (checkDirection state) world
+                    |> Tuple2.mapFst (List.choose id)
+                run (ss @ newStates) world'
 
-                match states with
-                | [] -> world
-                | state :: ss ->
-                    let (newStates, world') =
-                        directions
-                        |> List.mapFold (checkDirection state) world
-                        |> Tuple2.mapFst (List.choose id)
-                    run (ss @ newStates) world'
+        run [(P.origin, createInitialState (mem ()) [])] World.initial
 
-            run [((0, 0), createInitialState (mem ()) [])] World.initial
+    let createSteps world =
+        let { Map = map; Offset = P (minX, minY) } = world
+        let steps = Array2D.create (Array2D.length1 map) (Array2D.length2 map) -1
 
-        let world = createWorld ()
+        let setStep (P (x, y)) step =
+            Array2D.set steps (x - minX) (y - minY) step
 
-        246   // by manual count!
+        let getStep (P (x, y)) =
+            Array2D.get steps (x - minX) (y - minY)
+
+        let checkDirection position step direction =
+            let p' = getPosition position direction
+            let step' = getStep p'
+            let block = get p' world
+
+            match step', block with
+            | -1  , Free ->
+                setStep p' (step + 1)
+                set p' Oxygen world |> ignore
+                Some p'
+            | _ -> None
+
+        let rec run cells =
+            visualizer.Print world
+            match cells with
+            | [] -> ()
+            | cell :: cs ->
+                let cells =
+                    directions
+                    |> List.choose (checkDirection cell (getStep cell))
+
+                run (cs @ cells)
+
+        setStep world.Oxygen.Value 0
+        run [world.Oxygen.Value]
+        steps
+
+    let world = lazy ( createWorld () )
+    let steps = lazy ( createSteps world.Value )
+
+    let part1 () =
+
+        let (P (minX, minY)) = world.Value.Offset
+        Array2D.get steps.Value -minX -minY
 
     let part2 () =
-        376   // by manual count!
+
+        steps.Value
+        |> Array2D.toSeq
+        |> Seq.max
 
     let show () =
         showDay

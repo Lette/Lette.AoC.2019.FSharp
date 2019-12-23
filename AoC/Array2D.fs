@@ -45,3 +45,5 @@ module Array2D
             zero
         else
             array.[x, y]
+
+    let toSeq (array : 'a[,]) = array |> Seq.cast<'a>
