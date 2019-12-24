@@ -17,7 +17,7 @@ let main _ =
     Day14.show ()
     Day15.show ()
     Day16.show ()
-    //Day17.show ()
+    Day17.show ()
     //Day18.show ()
     //Day19.show ()
     //Day20.show ()

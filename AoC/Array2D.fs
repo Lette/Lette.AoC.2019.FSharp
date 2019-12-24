@@ -47,3 +47,10 @@ module Array2D
             array.[x, y]
 
     let toSeq (array : 'a[,]) = array |> Seq.cast<'a>
+
+    let toSeqi (array : 'a[,]) =
+        let length1 = Array2D.length1 array
+
+        array
+        |> toSeq
+        |> Seq.mapi (fun index item -> ((index / length1, index % length1), item))
